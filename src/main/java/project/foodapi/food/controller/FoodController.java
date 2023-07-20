@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import project.foodapi.food.entities.Food;
 import project.foodapi.food.entities.dto.FoodRequestDTO;
 import project.foodapi.food.entities.dto.FoodResponseDTO;
+import project.foodapi.food.entities.mapper.FoodMapper;
 import project.foodapi.food.repository.FoodRepository;
 import project.foodapi.food.useCases.*;
 
@@ -35,8 +36,7 @@ public class FoodController {
     @GetMapping("{id}")
     ResponseEntity<FoodResponseDTO> findById(@PathVariable Long id){
         try{
-            Food foundFood = new FindById(repository).execute(id);
-            FoodResponseDTO foodDTO = new FoodResponseDTO(foundFood);
+            FoodResponseDTO foodDTO = FoodMapper.toDTO(new FindById(repository).execute(id));
             return ResponseEntity.status(HttpStatus.OK).body(foodDTO);
         } catch (RuntimeException error){
             return ResponseEntity.notFound().build();
@@ -45,8 +45,7 @@ public class FoodController {
 
     @PostMapping
     ResponseEntity<FoodResponseDTO> save(@Valid @RequestBody FoodRequestDTO data){
-        Food food = new Food(data);
-        Food dbFood = new Create(repository).execute(food);
+        Food dbFood = new Create(repository).execute(FoodMapper.ToEntity(data));
         FoodResponseDTO foodResponse = new FoodResponseDTO(dbFood);
         return ResponseEntity.status(HttpStatus.CREATED).body(foodResponse);
     }
@@ -54,8 +53,7 @@ public class FoodController {
     @PutMapping("{id}")
     ResponseEntity<FoodResponseDTO> updateById(@PathVariable Long id, @Valid @RequestBody FoodRequestDTO data){
         try{
-            Food food = new Food(data);
-            Food dbFood = new UpdateById(repository).execute(id, food);
+            Food dbFood = new UpdateById(repository).execute(id, FoodMapper.ToEntity(data));
             FoodResponseDTO foodResponse = new FoodResponseDTO(dbFood);
             return ResponseEntity.status(HttpStatus.OK).body(foodResponse);
         } catch (RuntimeException error){
